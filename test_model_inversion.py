@@ -1,0 +1,198 @@
+# import pyomo.environ as pyomo
+import os
+from utli import load_json, save_json
+# import numpy as np
+from get_greenlist import get_greenlist,get_greenlist_filename
+from utli import to_string, print_info
+from greenlist_inversion_plus import GreenlistInversorPlus
+from utli import Logger
+import datetime
+from model_inversion_config import config, config_pro, config_conf
+import numpy as np
+
+
+
+if __name__=='__main__':
+    
+    dir_path='saved_data'
+    save_path='saved_res'
+    input_type='.json'
+    # time.sleep(1440)
+    wm_type='o'
+    dataset_name='c4_realnewslike'
+    model_name_list= ['facebook/opt-1.3b']#'facebook/opt-1.3b','../model/llama-2-7b'
+    wm_level = 'model'#'sentence_fi'
+    dataset_num=str(30000)
+    key_token_list=[123]
+    key_num=1
+    wm_seed, nl_seed=123, 456
+    
+    rand_num=0
+    expect_green_size=1
+    # gamma, delta=0.25, 2
+    
+    z_threshold=4
+    query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, True #vanilla
+    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, True, False #oracle
+    # query_flag, gamma_flag, oracle_flag, naive_flag=False, False, False, False 
+    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, False#pro
+    # sentence_up_num, sentence_down_num=0.99, 0.98
+    # wm_bound, nl_bound=0.9,0.9
+
+    perb_rate=0
+    TimeLimit=500
+    min_max_green_bound=-1
+
+    model_name = model_name_list[0]
+    
+    logger=Logger(
+        'log/GreenlistInversor-'+'-'.join([
+            model_name.replace('/','_'),
+            str(query_flag), str(gamma_flag), str(oracle_flag),str(naive_flag),
+            # str(sentence_up_num), str(sentence_down_num), 
+            # str(wm_bound),str(nl_bound),
+        ])+'-'+str(datetime.datetime.now().date())+'.log',
+        level='debug', 
+        screen=False
+    )
+    
+    for (gamma, delta) in [
+        # (0.25, 2),
+        (0.25, 4),
+        # (0.5, 2),
+        # (0.5, 4),
+    ]:#
+        for (
+            wm_data_num, nl_data_num, 
+            # perb_rate, 
+            TimeLimit
+        ) in [ 
+            # (100,100),(500,500)
+            # (5000,5000,0.1, 1000),
+            # (5000,5000,0.3, 1000),
+            # (10000,10000,0.5, 1000),
+            # (10000,10000,0.7, 1000),
+            # (500,500, 500),
+            (2000,2000, 300),
+            (5000,5000, 300),
+            (10000,10000, 300),
+            # (20000,20000, 1000),# 
+        ]:
+            
+            if query_flag or naive_flag or oracle_flag:
+                sentence_up_num, sentence_down_num=1,1
+                # sentence_up_num, sentence_down_num=0.2, 0.1
+            else:
+                (_, _, sentence_up_num, sentence_down_num) = config_pro[model_name][(gamma, delta)][wm_data_num]
+                # sentence_up_num, sentence_down_num=0.3, 0.2
+
+
+            if naive_flag or oracle_flag:
+                wm_bound, nl_bound=1,1#0.9,1.1
+            else:
+                (wm_bound, nl_bound, _, _) = config_pro[model_name][(gamma, delta)][wm_data_num]
+                # wm_bound, nl_bound=1.5,1.5
+            if perb_rate>0:
+                if query_flag or naive_flag or oracle_flag:
+                    sentence_up_num, sentence_down_num=1,0.8
+                # sentence_up_num=np.round(sentence_up_num-perb_rate,2)
+                wm_data_num+=perb_rate
+                nl_data_num+=perb_rate
+
+                (sentence_up_num, sentence_down_num, wm_bound, nl_bound, min_max_green_bound, expect_green_size) = config_conf[model_name][(gamma, delta, perb_rate)]
+                print(sentence_up_num, sentence_down_num, wm_bound, nl_bound, min_max_green_bound, expect_green_size)
+
+            output_file_name='_'.join([
+                wm_level, wm_type, dataset_name, model_name.replace('/','_'), dataset_num,
+                str(key_token_list), str(key_num), 
+                str(wm_seed), str(nl_seed), str(rand_num), 
+                str(wm_data_num), str(nl_data_num),
+                str(gamma), str(delta),
+                str(expect_green_size),
+                str(z_threshold), 
+                str(query_flag), str(gamma_flag), str(oracle_flag),
+                str(sentence_up_num), str(sentence_down_num),
+                str(wm_bound), str(nl_bound), 
+                str(naive_flag),
+                'token_color.json'
+            ])
+            output_file_path=os.path.join(save_path, output_file_name)
+            # if os.path.isfile(output_file_path):
+            #     print(model_name,gamma, delta,wm_data_num,wm_bound, nl_bound, sentence_up_num, sentence_down_num)
+            #     # logger.logger.info(to_string((model_name,gamma, delta,wm_data_num,wm_bound, nl_bound, sentence_up_num, sentence_down_num)))
+            #     continue
+            print()
+
+            green_inversor = GreenlistInversorPlus(tokenizer_tag=model_name, logger=logger)
+            
+            green_inversor.log_info(model_name)
+            green_inversor.log_info(to_string((wm_level, rand_num, gamma, delta)))
+            green_inversor.log_info(to_string(('native_flag', naive_flag)))
+            
+            green_list_name= get_greenlist_filename(key_token_list, gamma, model_name)#+'_'+wm_level +delta
+            green_inversor.load_true_green(os.path.join(dir_path, green_list_name))
+
+            file_name='_'.join((
+                dataset_name, 
+                model_name.replace('/','_'),
+                wm_level,wm_type,
+                dataset_num,
+                str(key_num),
+                str(gamma), str(delta)
+            ))
+            
+            green_inversor.set_dataset(
+                dir_path=dir_path, file_name=file_name, input_type=input_type,
+                wm_data_num=wm_data_num, nl_data_num=nl_data_num,
+                gamma=gamma,
+                z_threshold=z_threshold,
+                key_num=key_num, rand_num=rand_num,
+                wm_seed=wm_seed, nl_seed=nl_seed,
+                # token_prop=(0,0.5),
+                true_key_list=key_token_list,
+                query_flag=query_flag
+            )
+
+            green_inversor.set_model(
+                sentence_up_num=sentence_up_num, sentence_down_num=sentence_down_num,
+                perb_rate=perb_rate,
+                expect_green_size=expect_green_size,
+                key_list=key_token_list,#[1],#
+                token_len=2, 
+                gamma_flag=gamma_flag, oracle_flag=oracle_flag,
+                # reals_flag=True,
+                # token_color_ini=green_inversor.true_green_dict,
+                min_max_green_bound=min_max_green_bound,
+            )
+            green_inversor.set_solver()
+
+            if naive_flag==False and oracle_flag==False:
+                lock_sentence=True
+                if perb_rate>=0.5:
+                    lock_sentence=False
+                    # green_inversor.solve_min_max_bound(TimeLimit=TimeLimit, MIPGap=1e-4)
+                    # green_inversor.save_solution(save_path, output_file_name)
+                    green_inversor.solve_sum_whether_sentence(
+                        TimeLimit=TimeLimit, MIPGap=1e-4,
+                        wm_bound=wm_bound, nl_bound=nl_bound,
+                    )
+                    green_inversor.save_solution(save_path, output_file_name)
+                if perb_rate<0.5:
+                    flag=green_inversor.solve_wm_nl_sum_green(
+                        TimeLimit=TimeLimit, MIPGap=1e-4, 
+                        wm_bound=wm_bound, nl_bound=nl_bound,
+                        lock_sentence=lock_sentence, #bound_flag=False
+                    )
+                    if flag==False:
+                        green_inversor.log_info(to_string((model_name, gamma, delta, wm_data_num,)))
+                        continue
+                    green_inversor.save_solution(save_path, output_file_name)#'1-'+
+            
+            green_inversor.solve_green_num(max_min=False, TimeLimit=TimeLimit, MIPGap=1e-4, MIPGapAbs=2000,)
+            green_inversor.save_solution(save_path, output_file_name, )
+
+            # green_inversor.solve_min_key_sentence_num(TimeLimit=1000)
+            # green_inversor.save_solution(dir_path, wm_level+'_'+str(data_num)+'_'+str(key_num)+'_token_color.json')
+            # green_inversor.solve_min_key_num()
+            # green_inversor.set_obj(max_min=True)
+            # green_inversor.solve_model(TimeLimit=300)
