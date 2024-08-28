@@ -373,14 +373,6 @@ class GreenlistInversorBase:
                 token_color[key_id]=token_color[tmp_key]
         self.token_color_list.append(token_color)
         save_json(token_color, file_path=file_path)
-        
-        # token_color_list={
-        #     (key_id, token_id):
-        #     token_color[key_id][token_id][1]
-        #     for token_id in self.token_index
-        #     for key_id in self.key_index
-        # }
-        # return token_color_list
 
     def find_key4token_dict(self, tmp_token_color, token_color):
         same_num=[0]*len(self.true_key_list)

@@ -9,19 +9,12 @@ from utli import load_json
 from tqdm import tqdm
 
 from utli import Logger,to_string, remove_repeat
-import datetime
 from greenlist_inversion import count_green, count_z_score_bound
-# from get_greenlist import get_greenlist_filename
-# from copy import deepcopy
 from Sentence_Embedder import Sentence_Embedder
 from InstructorEmbedding import INSTRUCTOR
 from sentence_transformers import SentenceTransformer, util
-# from tokenizations import get_alignments
-# import Levenshtein
-# import random
-from transformers import GPT2LMHeadModel, GPT2TokenizerFast, OPTForCausalLM, AutoTokenizer
+from transformers import OPTForCausalLM, AutoTokenizer
 from transformers import LlamaTokenizer, LlamaForCausalLM
-# import copy
 
 class WM_Wiper:
 
@@ -48,24 +41,13 @@ class WM_Wiper:
             self.token_len_flag=False
         else:
             self.token_len_flag=True
-        # self.log=log
-        # if 'instructor' in embedder_name:
-        #     self.sentence_embedder = INSTRUCTOR(embedder_name)
-        # else:
-        #     self.sentence_embedder = SentenceTransformer(embedder_name)
         self.device=device
-        # self.sentence_embedder=self.sentence_embedder.to(device)
-
-        # self.true_green_flag=False
+        
     
     def set_para(self, gamma=0.25, z_threshold=4):
         self.gamma=gamma
         self.z_threshold=z_threshold
-        # self.log.logger.info(to_string(('gamma', gamma)))
-        # self.log.logger.info(to_string(('z_threshold', z_threshold)))
-
-        # self.true_green=get_greenlist(vocab_size=self.vocab_size, gamma= gamma, device='cuda:0')
-        # self.true_green_flag=True
+        
     
     def load_true_green(self, file_path):
         self.true_green=load_json(file_path)
@@ -118,13 +100,7 @@ class WM_Wiper:
         z_score_bound=self.get_z_threshold_num(len(token_ids))
         green_num=self.count_token_green(token_ids)[0]
 
-        # if ture_green_num==0:
-        #     ture_green_num=1
-        
-        # naive_rate=abs(ture_green_num-z_score_bound)/ture_green_num
-        # green_num_rate=abs(ture_green_num-green_num)/ture_green_num
-
-        return ture_green_num, z_score_bound, green_num#, naive_rate, green_num_rate
+        return ture_green_num, z_score_bound, green_num
 
     def count_true_green_key(self, token_ids, key):
         green_num=0
@@ -145,7 +121,7 @@ class WM_Wiper:
     def count_green_key(self, token_ids, key):
         green_num=0
         for token in token_ids:
-            if self.token_color_tokens[key][str(token)]==1:#(str(token) in self.token_color[key]):
+            if self.token_color_tokens[key][str(token)]==1:
                 green_num+=self.token_color[key][str(token)][1]
         return green_num    
 
@@ -160,8 +136,6 @@ class WM_Wiper:
         return green_num, key
     
     def check_green(self, token_id, key):
-        # if key not in self.token_color:
-        #     key=list(self.token_color.keys())[0]
         if self.token_color_tokens[key][str(token_id)]==1 and (self.token_color[key][str(token_id)][1]==1):
             return True
         return False
@@ -233,7 +207,6 @@ class WM_Wiper:
                 simi_token_ids.append(simi_token_id)
         # if len(simi_token_ids)>0:
         return simi_token_ids
-        # return [token_id]
     
     def find_red_simi(self, token_id, key):
         token=self.token_color[key][str(token_id)][0]
@@ -262,7 +235,7 @@ class WM_Wiper:
     def wm_wipe_greedy(
         self, sentence, 
         simi_num_for_token=3,
-        ppl_model_id=None,#'facebook/opt-1.3b', 
+        ppl_model_id=None,
         max_edit_rate=1,
     ):
         if self.ppl_model is None:
@@ -326,15 +299,6 @@ class WM_Wiper:
             wipe_success=1
 
         new_sentence=self.tokenizer.decode(new_token_ids)
-        # new_green_num, new_key=self.count_green(token_ids=new_token_ids)
-        # if new_green_num>=z_threshold_num:
-        #     print(new_key, raw_key)
-        
-        # raw_embedding=self.sentence_embedder.get_embedding(sentence)
-        # new_embedding=self.sentence_embedder.get_embedding(new_sentence)
-        # cos_simi=util.cos_sim(raw_embedding, new_embedding).item()
-        # edit_dist=Levenshtein.distance(sentence.lower(), new_sentence.lower())
-
         
         if self.ppl_model is not None:
             with torch.no_grad():
@@ -433,7 +397,6 @@ class WM_Wiper:
         input_ids=input_ids.reshape((1,-1))
         seq_len = input_ids.size(1)
 
-        # nlls = []
         prev_end_loc = 0
         iters=int(seq_len/stride)
         neg_log_likelihood=torch.tensor(0.0).to(self.device)
@@ -446,21 +409,16 @@ class WM_Wiper:
             if (end_loc-begin_loc)<stride:
                 break
 
-            # with torch.no_grad():
             outputs = self.ppl_model(tmp_input_ids.long(), labels=target_ids.long())
 
-            # loss is calculated using CrossEntropyLoss which averages over valid labels
-            # N.B. the model only calculates loss over trg_len - 1 labels, because it internally shifts the labels
-            # to the left by 1.
             neg_log_likelihood += outputs.loss/iters
 
-            # nlls.append(neg_log_likelihood)
 
             prev_end_loc = end_loc
             if end_loc == seq_len:
                 break
 
-        ppl = torch.exp(neg_log_likelihood)
+        # ppl = torch.exp(neg_log_likelihood)
         return neg_log_likelihood
 
     def wm_wipe_gumbel(
@@ -477,7 +435,6 @@ class WM_Wiper:
                 self.ppl_model=LlamaForCausalLM.from_pretrained(
                 ppl_model_id, 
                 torch_dtype=torch.float16, 
-                # device_map='auto',
             ).to(self.device)
         self.simi_num_for_token=simi_num_for_token
 

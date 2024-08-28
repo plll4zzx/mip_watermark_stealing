@@ -3,6 +3,7 @@
 *.iml
 *.npy
 saved_data/*
+saved_res/*
 plot/*
 data/*
 saved_model/*

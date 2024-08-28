@@ -32,10 +32,10 @@ if __name__=='__main__':
     # gamma, delta=0.25, 2
     
     z_threshold=4
-    query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, True #vanilla
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, True, False #oracle
-    # query_flag, gamma_flag, oracle_flag, naive_flag=False, False, False, False 
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, False#pro
+    query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, True #vanilla-as1
+    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, True, False #oracle-as1
+    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, False#pro-as1
+    # query_flag, gamma_flag, oracle_flag, naive_flag=False, False, False, False #pro-as2
     # sentence_up_num, sentence_down_num=0.99, 0.98
     # wm_bound, nl_bound=0.9,0.9
 
@@ -57,26 +57,19 @@ if __name__=='__main__':
     )
     
     for (gamma, delta) in [
-        # (0.25, 2),
-        (0.25, 4),
+        (0.25, 2),
+        # (0.25, 4),
         # (0.5, 2),
         # (0.5, 4),
     ]:#
         for (
             wm_data_num, nl_data_num, 
-            # perb_rate, 
             TimeLimit
         ) in [ 
-            # (100,100),(500,500)
-            # (5000,5000,0.1, 1000),
-            # (5000,5000,0.3, 1000),
-            # (10000,10000,0.5, 1000),
-            # (10000,10000,0.7, 1000),
-            # (500,500, 500),
             (2000,2000, 300),
             (5000,5000, 300),
             (10000,10000, 300),
-            # (20000,20000, 1000),# 
+            (20000,20000, 3000),# 
         ]:
             
             if query_flag or naive_flag or oracle_flag:
@@ -117,10 +110,6 @@ if __name__=='__main__':
                 'token_color.json'
             ])
             output_file_path=os.path.join(save_path, output_file_name)
-            # if os.path.isfile(output_file_path):
-            #     print(model_name,gamma, delta,wm_data_num,wm_bound, nl_bound, sentence_up_num, sentence_down_num)
-            #     # logger.logger.info(to_string((model_name,gamma, delta,wm_data_num,wm_bound, nl_bound, sentence_up_num, sentence_down_num)))
-            #     continue
             print()
 
             green_inversor = GreenlistInversorPlus(tokenizer_tag=model_name, logger=logger)
@@ -148,7 +137,6 @@ if __name__=='__main__':
                 z_threshold=z_threshold,
                 key_num=key_num, rand_num=rand_num,
                 wm_seed=wm_seed, nl_seed=nl_seed,
-                # token_prop=(0,0.5),
                 true_key_list=key_token_list,
                 query_flag=query_flag
             )
@@ -157,10 +145,10 @@ if __name__=='__main__':
                 sentence_up_num=sentence_up_num, sentence_down_num=sentence_down_num,
                 perb_rate=perb_rate,
                 expect_green_size=expect_green_size,
-                key_list=key_token_list,#[1],#
+                key_list=key_token_list,
                 token_len=2, 
                 gamma_flag=gamma_flag, oracle_flag=oracle_flag,
-                # reals_flag=True,
+                reals_flag=True,
                 # token_color_ini=green_inversor.true_green_dict,
                 min_max_green_bound=min_max_green_bound,
             )
@@ -170,8 +158,7 @@ if __name__=='__main__':
                 lock_sentence=True
                 if perb_rate>=0.5:
                     lock_sentence=False
-                    # green_inversor.solve_min_max_bound(TimeLimit=TimeLimit, MIPGap=1e-4)
-                    # green_inversor.save_solution(save_path, output_file_name)
+                    
                     green_inversor.solve_sum_whether_sentence(
                         TimeLimit=TimeLimit, MIPGap=1e-4,
                         wm_bound=wm_bound, nl_bound=nl_bound,
@@ -181,7 +168,7 @@ if __name__=='__main__':
                     flag=green_inversor.solve_wm_nl_sum_green(
                         TimeLimit=TimeLimit, MIPGap=1e-4, 
                         wm_bound=wm_bound, nl_bound=nl_bound,
-                        lock_sentence=lock_sentence, #bound_flag=False
+                        lock_sentence=lock_sentence, 
                     )
                     if flag==False:
                         green_inversor.log_info(to_string((model_name, gamma, delta, wm_data_num,)))
@@ -190,9 +177,3 @@ if __name__=='__main__':
             
             green_inversor.solve_green_num(max_min=False, TimeLimit=TimeLimit, MIPGap=1e-4, MIPGapAbs=2000,)
             green_inversor.save_solution(save_path, output_file_name, )
-
-            # green_inversor.solve_min_key_sentence_num(TimeLimit=1000)
-            # green_inversor.save_solution(dir_path, wm_level+'_'+str(data_num)+'_'+str(key_num)+'_token_color.json')
-            # green_inversor.solve_min_key_num()
-            # green_inversor.set_obj(max_min=True)
-            # green_inversor.solve_model(TimeLimit=300)
