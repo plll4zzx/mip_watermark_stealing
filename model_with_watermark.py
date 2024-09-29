@@ -13,7 +13,7 @@ from transformers import LlamaTokenizer, LlamaForCausalLM
 
 class ModelWithWatermark:
 
-    def __init__(self, model_name_or_path, load_fp16=False, use_gpu=True, tokenizer_path=None):
+    def __init__(self, model_name_or_path, load_fp16=True, use_gpu=True, tokenizer_path=None):
         self.is_seq2seq_model = any([(model_type in model_name_or_path) for model_type in ["t5","T0"]])
         self.is_decoder_only_model = any([(model_type in model_name_or_path) for model_type in ["gpt","opt","bloom","phi",'llama']])
 
@@ -51,10 +51,10 @@ class ModelWithWatermark:
 
         if use_gpu:
             self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            if load_fp16: 
-                pass
-            else: 
-                self.model = self.model.to(self.device)
+            # if load_fp16: 
+            #     pass
+            # else: 
+            self.model = self.model.to(self.device)
         else:
             self.device = "cpu"
         self.model.eval()

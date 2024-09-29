@@ -15,6 +15,7 @@ from utli import save_json
 # import numpy as np
 
 def get_watermark_data(
+    mww,
     c4_dataset, dir_path,
     dataset_name, file_num, file_data_num,
     wm_level, wm_type, model_name, output_dir,
@@ -25,11 +26,10 @@ def get_watermark_data(
     data_num=str(int(file_num*file_data_num))
     print('Dataset imported')
     
-    load_fp16=False
-    if '1.3' not in model_name:
-        load_fp16=True
+    # load_fp16=False
+    # if '1.3' not in model_name:
+    #     load_fp16=True
     
-    mww=ModelWithWatermark(model_name, load_fp16=load_fp16)
     mww.set_watermark(
         wm_level=wm_level, 
         finit_key_num=finit_key_num,
@@ -92,16 +92,17 @@ if __name__=='__main__':
 
     wm_level_list = ['model', 'sentence_fi']
     
-    model_name_list= ['facebook/opt-1.3b','../model/llama-2-7b', ]
+    model_name_list= ['../model/llama-2-7b', 'facebook/opt-1.3b',]
     finit_key_num=3
     # os.system('set PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:32')
     for model_name in model_name_list:
+        mww=ModelWithWatermark(model_name)
         for wm_level in wm_level_list:
             for gamma in [0.25, 0.5,]:
                 for delta in [2, 4,]:
                     print(model_name, wm_level, wm_type, gamma, delta)
                     get_watermark_data(
-                        c4_dataset,
+                        mww,c4_dataset,
                         dir_path=dir_path, 
                         dataset_name=dataset_name, 
                         file_num=file_num, 
