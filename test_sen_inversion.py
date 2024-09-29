@@ -37,7 +37,7 @@ if __name__=='__main__':
     # wm_bound, nl_bound=0.9,0.9
 
     perb_rate=0
-    TimeLimit=500
+    TimeLimit=1000
 
     model_name = model_name_list[0]
     
