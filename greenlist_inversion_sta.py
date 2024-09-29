@@ -4,7 +4,7 @@ import os
 from utli import load_json, save_json
 import numpy as np
 from get_greenlist import get_greenlist,get_greenlist_filename
-from utli import to_string, print_info
+from utli import to_string, print_info, check_dir
 from greenlist_inversion_base import GreenlistInversorBase
 import random
 from utli import Logger
@@ -110,6 +110,8 @@ if __name__=='__main__':
     
     dir_path='saved_data'
     save_path='saved_res'
+    check_dir(dir_path)
+    check_dir(save_path)
     input_type='.json'
     # time.sleep(1440)
     wm_type='o'
@@ -133,6 +135,7 @@ if __name__=='__main__':
     max_num_flag=False
     perb_rate=0
 
+    check_dir('log')
     logger=Logger(
         'log/GreenlistInversorSta-'+'-'.join([
             str(query_flag), 

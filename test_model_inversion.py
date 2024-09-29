@@ -3,7 +3,7 @@ import os
 from utli import load_json, save_json
 # import numpy as np
 from get_greenlist import get_greenlist,get_greenlist_filename
-from utli import to_string, print_info
+from utli import to_string, print_info, check_dir
 from greenlist_inversion_plus import GreenlistInversorPlus
 from utli import Logger
 import datetime
@@ -16,6 +16,8 @@ if __name__=='__main__':
     
     dir_path='saved_data'
     save_path='saved_res'
+    check_dir(dir_path)
+    check_dir(save_path)
     input_type='.json'
     # time.sleep(1440)
     wm_type='o'
@@ -45,6 +47,7 @@ if __name__=='__main__':
 
     model_name = model_name_list[0]
     
+    check_dir('log')
     logger=Logger(
         'log/GreenlistInversor-'+'-'.join([
             model_name.replace('/','_'),

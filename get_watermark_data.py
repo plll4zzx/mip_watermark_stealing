@@ -8,7 +8,7 @@ from model_with_watermark import ModelWithWatermark
 from read_data import c4
 from tqdm import tqdm
 import os
-from utli import save_json
+from utli import save_json, check_dir
 # import json
 # from Sentence_Embedder import Sentence_Embedder
 # from sentence_transformers import SentenceTransformer, util
@@ -84,7 +84,7 @@ if __name__=='__main__':
     file_data_num=1
     
     output_dir='saved_data'
-
+    check_dir(output_dir)
     wm_type='o'
 
     c4_dataset=c4(dir_path=dir_path, file_num=file_num, file_data_num=file_data_num)

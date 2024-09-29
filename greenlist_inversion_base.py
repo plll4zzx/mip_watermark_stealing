@@ -8,7 +8,7 @@ from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 from utli import get_key, print_info
-from utli import Logger,to_string
+from utli import Logger,to_string,check_dir
 from utli import count_z_score_bound
 from utli import load_json, save_json, remove_repeat
 import random
@@ -22,6 +22,8 @@ class GreenlistInversorBase:
         self.true_green = None
         self.device='cuda:0'
         self.token_color_list=[]
+        
+        check_dir('log')
         if logger is None:
             self.log=Logger(
                 'log/GreenlistInversor'+'-'+str(datetime.datetime.now().date())+'.log',

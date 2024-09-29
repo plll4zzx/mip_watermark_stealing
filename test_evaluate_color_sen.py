@@ -1,6 +1,6 @@
 
 import os
-from utli import load_json, save_json
+from utli import load_json, save_json, check_dir
 from tqdm import tqdm
 from utli import Logger,to_string
 import datetime
@@ -15,6 +15,8 @@ if __name__=='__main__':
     
     dir_path='saved_data'
     save_path='saved_res'
+    check_dir(dir_path)
+    check_dir(save_path)
     input_type='.json'
     # time.sleep(1440)
     wm_type='o'

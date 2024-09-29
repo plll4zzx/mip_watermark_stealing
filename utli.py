@@ -7,6 +7,11 @@ import torch
 from datetime import datetime
 import random
 import copy
+import os
+
+def check_dir(dir_path):
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
 
 def remove_repeat(token_ids, repeat_len=10):
     sen_dict={}
@@ -149,7 +154,7 @@ def save_model(model, tokenizer, model_path):
     tokenizer.save_pretrained(model_path)
     model.save_pretrained(model_path)
 
-def to_string(inputs:()):
+def to_string(inputs):
     output_str=''
     for input in inputs:
         if isinstance(input, str):

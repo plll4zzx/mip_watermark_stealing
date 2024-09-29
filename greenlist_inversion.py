@@ -7,7 +7,7 @@ import numpy as np
 from get_greenlist import get_greenlist,get_greenlist_filename
 from utli import Logger,to_string
 import datetime
-from utli import count_green, count_z_score_bound,print_info
+from utli import count_green, count_z_score_bound,print_info, check_dir
 from greenlist_inversion_base import GreenlistInversorBase
 
 class GreenlistInversor(GreenlistInversorBase):
@@ -111,6 +111,7 @@ class GreenlistInversor(GreenlistInversorBase):
 if __name__=='__main__':
 
     dir_path='saved_data'
+    check_dir(dir_path)
     input_type='.json'
     # time.sleep(1440)
     wm_type='o'

@@ -1,4 +1,4 @@
-from utli import load_json
+from utli import load_json, check_dir
 from model_inversion_config import config, config_sen, config_pro, config_sta_max_num
 import os
 import numpy as np
@@ -26,8 +26,10 @@ if __name__=='__main__':
     candi_num=3
 
     dir_path='saved_data/res_wp'
-    input_type='.json'
     save_path='saved_res'
+    check_dir(dir_path)
+    check_dir(save_path)
+    input_type='.json'
     # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'

@@ -14,7 +14,7 @@ import numpy as np
 # from transformers import GPT2LMHeadModel, GPT2TokenizerFast, OPTForCausalLM, AutoTokenizer
 # import copy
 import os
-from utli import load_json, save_json
+from utli import load_json, save_json, check_dir
 from tqdm import tqdm
 from utli import Logger,to_string
 import datetime
@@ -92,6 +92,7 @@ if __name__=='__main__':
     if query_flag=='True' or naive_flag=='True' or oracle_flag=='True':
         sentence_up_num, sentence_down_num=1,1
     
+    check_dir('log')
     log=Logger(
         'log/WM_Wiper_'+'_'.join((
             model_name.replace('/', '_'), str(gamma), str(delta),
@@ -104,8 +105,10 @@ if __name__=='__main__':
     )
 
     dir_path='saved_data'
-    input_type='.json'
     save_path='saved_res'
+    check_dir(dir_path)
+    check_dir(save_path)
+    input_type='.json'
     # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'
