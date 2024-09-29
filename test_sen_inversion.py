@@ -55,15 +55,12 @@ if __name__=='__main__':
     
     for (gamma, delta) in [
         (0.25, 2),
-        (0.25, 4),
         (0.5, 2),
-        (0.5, 4),
     ]:#
         for (
-            wm_data_num, nl_data_num, 
-            TimeLimit
+            wm_data_num, nl_data_num, TimeLimit
         ) in [ 
-            (3000,3000, 300),
+            (3000,3000, 500),
             (6000,6000, 600),
         ]:
             
@@ -161,7 +158,7 @@ if __name__=='__main__':
                 if naive_flag==False and oracle_flag==False:
                     lock_sentence=True
                     flag=green_inversor.solve_wm_nl_sum_green(
-                        TimeLimit=TimeLimit, MIPGap=0.5, MIPGapAbs=15,
+                        TimeLimit=TimeLimit, MIPGap=0.01, MIPGapAbs=5,
                         wm_bound=wm_bound, nl_bound=nl_bound,
                         lock_sentence=lock_sentence, 
                     )
