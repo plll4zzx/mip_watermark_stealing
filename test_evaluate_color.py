@@ -19,7 +19,7 @@ if __name__=='__main__':
     # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'
-    model_name_list= ['facebook/opt-1.3b']#'facebook/opt-1.3b','../model/llama-2-7b'
+    model_name_list= ['../model/llama-2-7b']#'facebook/opt-1.3b','../model/llama-2-7b'
     wm_level = 'model'#'sentence_fi'#
     dataset_num=str(30000)
     key_token_list=[123]
@@ -45,7 +45,7 @@ if __name__=='__main__':
     print(model_name, attack_type, query_flag, gamma_flag, oracle_flag, naive_flag)
     print('gamma','delta','data_num', end=' ')
     for idx in range(key_num):
-        print('$N_g$', '$N_t$',	'Acc.', end=' ')
+        print('$N_g$', '$N_t$',	'Precision', end=' ')
     print()
 
     
