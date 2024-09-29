@@ -1,7 +1,6 @@
-# import pyomo.environ as pyomo
+
 import os
 from utli import load_json, save_json
-# import numpy as np
 from get_greenlist import get_greenlist,get_greenlist_filename
 from utli import to_string, print_info, check_dir
 from greenlist_inversion_plus import GreenlistInversorPlus
@@ -19,11 +18,10 @@ if __name__=='__main__':
     check_dir(dir_path)
     check_dir(save_path)
     input_type='.json'
-    # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'
-    model_name_list= ['facebook/opt-1.3b']#'facebook/opt-1.3b','../model/llama-2-7b'
-    wm_level = 'sentence_fi'#'model'#
+    model_name_list= ['../model/llama-2-7b']
+    wm_level = 'sentence_fi'
     dataset_num=str(30000)
     key_token_list=[1,2,3]
     key_num=3
@@ -34,9 +32,7 @@ if __name__=='__main__':
     # gamma, delta=0.25, 2
     
     z_threshold=4
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, True, False
     query_flag, gamma_flag, oracle_flag, naive_flag=False, False, False, False
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, True
     # sentence_up_num, sentence_down_num=0.99, 0.98
     # wm_bound, nl_bound=0.9,0.9
 
