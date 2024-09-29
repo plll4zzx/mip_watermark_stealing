@@ -2,14 +2,16 @@
 *.xml
 *.iml
 *.npy
-saved_data/*
+# saved_data/*
 saved_res/*
 plot/*
 data/*
 saved_model/*
 tmp_data/*
-log/*
-# *.log
+# log/*
+*.log
+*.json:Zone.Identifier
+*.json_*
 
 
 # Byte-compiled / optimized / DLL files
