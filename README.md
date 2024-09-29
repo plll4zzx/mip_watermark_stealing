@@ -49,3 +49,14 @@ Commands in ''tmp_sh.sh'' are used to remove the watermarks based on the green l
 (4) ''candi_num'' is the size of candidate synonym tokens.
 
 For example, after setting up the base environment, to reproduce the multi-key results in Table.~7 (in accepted version of paper), you can set ''query_flag'', ''gamma_flag'', ''oracle_flag'', ''naive_flag'' to ''Flase'', ''gamma'' to 0.25, ''delta'' to 2, ''model_name'' to ''llama'', and then run the code in ''test_sen_inversion.py''. 
+
+## License
+
+This project includes code from open-source projects that are licensed under the Apache License 2.0. 
+
+The following projects have been used:
+- [lm-watermarking](https://github.com/jwkirchenbauer/lm-watermarking)
+
+In accordance with the Apache License 2.0, you can find a copy of the license in the [LICENSE](./LICENSE-2.0.txt) file.
+
+This project adheres to the Apache License 2.0 requirements. If you make modifications to the included code, please ensure that you comply with the license terms.
