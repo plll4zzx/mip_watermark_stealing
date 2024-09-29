@@ -22,8 +22,8 @@ if __name__=='__main__':
     # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'
-    model_name_list= ['facebook/opt-1.3b']#'facebook/opt-1.3b','../model/llama-2-7b'
-    wm_level = 'model'#'sentence_fi'
+    model_name_list= ['../model/llama-2-7b']
+    wm_level = 'model'
     dataset_num=str(30000)
     key_token_list=[123]
     key_num=1
@@ -61,9 +61,9 @@ if __name__=='__main__':
     
     for (gamma, delta) in [
         (0.25, 2),
-        # (0.25, 4),
-        # (0.5, 2),
-        # (0.5, 4),
+        (0.25, 4),
+        (0.5, 2),
+        (0.5, 4),
     ]:#
         for (
             wm_data_num, nl_data_num, 
