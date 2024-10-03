@@ -51,9 +51,6 @@ class ModelWithWatermark:
 
         if use_gpu:
             self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            # if load_fp16: 
-            #     pass
-            # else: 
             self.model = self.model.to(self.device)
         else:
             self.device = "cpu"

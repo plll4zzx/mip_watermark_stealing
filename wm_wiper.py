@@ -21,13 +21,11 @@ class WM_Wiper:
     def __init__(
         self, 
         tokenizer_tag, 
-        # embedder_name='all-MiniLM-L6-v2', 
         device='cuda:0', 
-        # log=None
         token_len_flag='False',
     ):
 
-        self.gensimi=None#GensimModel()
+        self.gensimi=None
         if 'opt' in tokenizer_tag:
             self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_tag, token=False)
         elif 'llama' in tokenizer_tag:
@@ -202,10 +200,7 @@ class WM_Wiper:
             if self.check_green(simi_token_id, key):
                 continue
             else:
-                # if self.true_green_dict[key][simi_token_id]==1:
-                #     print()
                 simi_token_ids.append(simi_token_id)
-        # if len(simi_token_ids)>0:
         return simi_token_ids
     
     def find_red_simi(self, token_id, key):
@@ -286,8 +281,6 @@ class WM_Wiper:
                 tmp_subst=self.substitute(token_id, raw_key)
                 if len(tmp_subst)>0:
                     new_token_ids.append(tmp_subst[0])
-                    # if self.true_green_dict[raw_key][tmp_subst[0]]==1:
-                    #     print()
                     edit_dist+=1
                     continue
             new_token_ids.append(token_id)
@@ -337,7 +330,6 @@ class WM_Wiper:
 
         if raw_green_num<z_threshold_num:
             return (
-                # sentence, 
                 -1, raw_green_num, z_threshold_num
             )
         
@@ -380,19 +372,15 @@ class WM_Wiper:
             wipe_success=1
 
         new_sentence=self.tokenizer.decode(new_token_ids[0])
-        # if new_green_num>=z_threshold_num:
-        #     print(new_key, raw_key)
 
         new_embedding=self.sentence_embedder.get_embedding(new_sentence)
         cos_simi=util.cos_sim(raw_embedding, new_embedding).item()
 
         return (
-            # new_sentence, 
             wipe_success, raw_green_num, new_green_num, z_threshold_num, cos_simi
         )
     
     def get_ppl(self, input_ids, max_length=10, stride = 10):
-        # max_length = 10#model.config.n_positions
         
         input_ids=input_ids.reshape((1,-1))
         seq_len = input_ids.size(1)
@@ -402,7 +390,7 @@ class WM_Wiper:
         neg_log_likelihood=torch.tensor(0.0).to(self.device)
         for begin_loc in range(0, seq_len, stride):
             end_loc = min(begin_loc + max_length, seq_len)
-            trg_len = end_loc - prev_end_loc  # may be different from stride on last loop
+            trg_len = end_loc - prev_end_loc  
             tmp_input_ids = input_ids[:,begin_loc:end_loc].to(self.device)
             target_ids = tmp_input_ids.clone()
             target_ids[:,0:-trg_len] = -100
@@ -418,7 +406,6 @@ class WM_Wiper:
             if end_loc == seq_len:
                 break
 
-        # ppl = torch.exp(neg_log_likelihood)
         return neg_log_likelihood
 
     def wm_wipe_gumbel(
@@ -452,10 +439,8 @@ class WM_Wiper:
                 -1, raw_green_num, z_threshold_num
             )
         
-        # subst_num=raw_green_num-z_threshold_num
         if 'llama' in ppl_model_id:
             embedding_dim=self.ppl_model.model.embed_tokens.embedding_dim
-            # learning_rate=1000
         else:
             embedding_dim=self.ppl_model.model.decoder.embed_tokens.embedding_dim
         red_vec_dict={}
@@ -463,7 +448,7 @@ class WM_Wiper:
         red_mask_dict={}
         red_simi_emb_dict={}
         for idx in range(len(token_ids)):
-            token_id=token_ids[idx]#.item()
+            token_id=token_ids[idx]
             if self.check_green(token_id, raw_key) and token_id not in red_vec_dict:
                 red_simi=self.find_red_simi(token_id, raw_key)
                 if len(red_simi)==0:
@@ -488,7 +473,6 @@ class WM_Wiper:
                 max_length=20,
                 stride=20,
             )
-        # print(raw_ppl)
         
         if 'llama' in ppl_model_id:
             raw_embedding=self.ppl_model.model.embed_tokens(raw_token_ids.to(self.device))
@@ -496,7 +480,6 @@ class WM_Wiper:
             raw_embedding=self.ppl_model.model.decoder.embed_tokens(raw_token_ids.to(self.device))
         new_embedding=raw_embedding.clone()
         new_embedding=new_embedding.to(self.device)
-        # optimizer=torch.optim.Adam(new_embedding, lr=0.1)
         self.ppl_model.eval()
         for iter in range(iters):
             self.ppl_model.zero_grad()
@@ -509,7 +492,6 @@ class WM_Wiper:
                 
                 g_label=F.gumbel_softmax(
                     red_vec_dict[token_id], tau=1, 
-                    # hard=True
                 )
                 tmp_red_token=g_label.T*red_simi_emb_dict[token_id]
                 tmp_emb=red_mask_dict[token_id][1]*torch.sum(tmp_red_token, dim=0)
@@ -519,11 +501,8 @@ class WM_Wiper:
                 outputs = self.ppl_model.forward(inputs_embeds=new_embedding.half(), labels=raw_token_ids.to(self.device))
             else:
                 outputs = self.ppl_model.forward(inputs_embeds=new_embedding, labels=raw_token_ids.to(self.device))
-            # print(outputs.loss.item())
             
             outputs.loss.backward()
-            # optimizer.step()
-            # optimizer.zero_grad()
             for token_id in red_vec_dict:
                 grad = red_vec_dict[token_id].grad.data
                 red_vec_dict[token_id] = red_vec_dict[token_id]-grad*learning_rate
@@ -547,7 +526,6 @@ class WM_Wiper:
                 max_length=20,
                 stride=20,
             )
-        # print(new_ppl)
         new_green_num, new_key=self.count_true_green(token_ids=new_token_ids)
         if new_green_num>=z_threshold_num:
             wipe_success=0
@@ -649,8 +627,6 @@ class WM_Wiper:
             )
 
         new_sentence=self.tokenizer.decode(new_token_ids[0])
-        # if new_green_num>=z_threshold_num:
-        #     print(new_key, raw_key)
 
         return (
             new_sentence, 

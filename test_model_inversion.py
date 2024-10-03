@@ -1,7 +1,6 @@
-# import pyomo.environ as pyomo
+
 import os
 from utli import load_json, save_json
-# import numpy as np
 from get_greenlist import get_greenlist,get_greenlist_filename
 from utli import to_string, print_info, check_dir, str2bool
 from greenlist_inversion_plus import GreenlistInversorPlus
@@ -47,11 +46,6 @@ if __name__=='__main__':
     gamma_flag=str2bool(args.gamma_flag) 
     oracle_flag=str2bool(args.oracle_flag) 
     naive_flag=str2bool(args.naive_flag )
-    
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, True #vanilla-as1
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, True, False #oracle-as1
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, False#pro-as1
-    # query_flag, gamma_flag, oracle_flag, naive_flag=False, False, False, False #pro-as2
     
     wm_level = 'model'
     input_type='.json'

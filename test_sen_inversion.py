@@ -64,8 +64,6 @@ if __name__=='__main__':
         'log/GreenlistInversor-'+'-'.join([
             model_name.replace('/','_'),
             str(query_flag), str(gamma_flag), str(oracle_flag),str(naive_flag),
-            # str(sentence_up_num), str(sentence_down_num), 
-            # str(wm_bound),str(nl_bound),
         ])+'-'+str(datetime.datetime.now().date())+'1.log',
         level='debug', 
         screen=False

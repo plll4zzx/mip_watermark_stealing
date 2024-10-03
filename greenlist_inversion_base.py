@@ -51,16 +51,7 @@ class GreenlistInversorBase:
                     self.true_green_dict[key][idx]=1
                 else:
                     self.true_green_dict[key][idx]=0
-        # self.true_green_vector={}
-        # for key_id in self.true_green:
-        #     self.true_green_vector[key_id]=torch.sum(
-        #         F.one_hot(
-        #             torch.tensor(self.true_green[key_id]).to(self.device), 
-        #             self.vocab_size
-        #         ).to(self.device),
-        #         dim=0
-        #     )
-        #     torch.cuda.empty_cache()
+        
         return
 
     def count_rate(self, sentence_index_list):
@@ -90,8 +81,7 @@ class GreenlistInversorBase:
         key='1'
         for tmp_key in self.true_green:
             tmp_num=self.count_green_key(token_ids,tmp_key)
-            # tmp_num=self.count_green_vector(token_ids,key)
-            # torch.cuda.empty_cache()
+            
             if green_num<tmp_num:
                 green_num=tmp_num
                 key=tmp_key
@@ -101,7 +91,7 @@ class GreenlistInversorBase:
         tmp_vector=F.one_hot(torch.tensor(token_ids), self.vocab_size).to(self.device)
         return torch.sum(torch.mul(
             tmp_vector,
-            self.true_green_vector[key_id]#.to(self.device)
+            self.true_green_vector[key_id]
         ))
 
     def set_dataset(self, 
@@ -117,16 +107,7 @@ class GreenlistInversorBase:
         true_key_list=[],
         query_flag=True,
         min_len=20,
-        # wm_data=None, nl_data=None,
     ):
-        # if self.true_green is None:
-        #     self.true_green={
-        #         str(key_id):get_greenlist(
-        #             key_token=key_id, vocab_size=self.vocab_size, 
-        #             gamma= gamma, device='cuda'
-        #         )
-        #         for key_id in range(key_num)
-        #     }
 
         self.gamma=gamma
         self.z_threshold=z_threshold
@@ -142,7 +123,6 @@ class GreenlistInversorBase:
         
         input_file_path=os.path.join(dir_path,file_name+input_type)
         data_json=load_json(input_file_path)
-        # data_json=data_json[0:data_num]
 
         if isinstance(wm_data_num, int):
             wm_rand_num=0
@@ -157,8 +137,7 @@ class GreenlistInversorBase:
 
         with_watermark_list=[]
         without_watermark_list=[]
-        # re_sentence_list=[]
-        for data in data_json:#
+        for data in data_json:
             if (
                 ('redecoded_input' in data) 
                 and ('output_with_watermark' in data) 
@@ -166,7 +145,6 @@ class GreenlistInversorBase:
             ):
                 with_watermark_list.append(data['output_with_watermark'])
                 without_watermark_list.append(data['output_without_watermark'])
-                # re_sentence_list.append(data['redecoded_input'])
         
         tmp_wm_data=self.tokenizer.batch_encode_plus(with_watermark_list).data['input_ids']
         random.seed(wm_seed)
@@ -177,15 +155,11 @@ class GreenlistInversorBase:
         random.seed(nl_seed)
         random.shuffle(tmp_nl_data)
         tmp_nl_data=tmp_nl_data[0:nl_data_num]
-        # raw_data=self.tokenizer.batch_encode_plus(re_sentence_list).data['input_ids']
 
         token_rate={
             idx:0
             for idx in range(self.vocab_size)
         }
-        # for sen in tmp_wm_data+tmp_nl_data:
-        #     for token in sen:
-        #         token_rate[token]+=1
         
         all_token_index=sorted(token_rate.items(), key=lambda x: x[1], reverse=True)
         all_token_index0=all_token_index[0:int(self.vocab_size*0.5)]
@@ -223,13 +197,10 @@ class GreenlistInversorBase:
                     wm_data.append(token_ids)
             else:
                 wm_data.append(token_ids)
-            # if self.count_green(wm_data[-1])[0]<=self.get_z_score_bound(self.sentence_len(wm_data[-1])):
-            #     print()
             
         for idx in tqdm(range(len(tmp_nl_data)), ncols=100, desc='load nl', leave=True):
             token_ids=tmp_nl_data[idx]
             token_ids=remove_repeat(token_ids)
-            # key=get_key(token_ids, key_num)
             if len(token_ids)<min_len:
                 continue
             
@@ -299,7 +270,6 @@ class GreenlistInversorBase:
         self.solver.options['OutputFlag'] = 1
         self.solver.options['Seed'] = 123
         self.solver.options['MIPGap'] = MIPGap
-        # self.solver.options['LogFile'] = 'log/gurobi.log'
     
     def solve(self, TimeLimit=None, MIPGap=None, warmstart=True, MIPGapAbs=None):
         if TimeLimit is not None:
@@ -308,18 +278,18 @@ class GreenlistInversorBase:
             self.solver.options['MIPGap'] = MIPGap
         if MIPGapAbs is not None:
             self.solver.options['MIPGapAbs'] = MIPGapAbs
-        # self.solver.options['IntegralityFocus'] = 1
+            
         solution = self.solver.solve(self.model, warmstart=warmstart)
     
     def save_solution(self, dir_path, file_name):
         green_num={
             key_id:0
             for key_id in self.true_key_list
-        }#[0]*self.key_num
+        }
         true_green_num={
             key_id:0
             for key_id in self.true_key_list
-        }#[0]*self.key_num
+        }
         if self.solver._solver_model.SolCount==0:
             token_color={
                 key_id:{
@@ -345,12 +315,7 @@ class GreenlistInversorBase:
                         tmp_color=1
                     else:
                         tmp_color=0
-                    # if self.key_num>1 and (
-                    #     token_id in self.nl_token_rate
-                    # ) and (
-                    #     token_id in self.wm_token_rate
-                    # ) and self.nl_token_rate[token_id]/self.wm_token_rate[token_id]<=1:
-                    #     tmp_color=1
+                    
                     tmp_token_color[key_id][token_id]=(
                         self.tokenizer.decode(token_id),
                         tmp_color

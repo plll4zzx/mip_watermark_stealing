@@ -23,17 +23,11 @@ class GreenlistInversor(GreenlistInversorBase):
             self.get_z_score_bound(len(sen))
             for sen in self.dataset
         ]
-        # self.green_num_list=[
-        #     count_green(sen, self.true_green)
-        #     for sen in self.dataset
-        # ]
+        
         self.token_index=list(range(self.vocab_size))
         self.token_weight=[]
         for token_id in self.token_index:
             token=self.tokenizer.decode(token_id)
-            # if token in ['that', 'the', 'to', 'of', 'is', 'are','be','on','in','it','an','and','for']:
-            #     self.token_weight.append(0)
-            #     continue
             if len(token)<=1:
                 self.token_weight.append(0)
                 continue
@@ -113,11 +107,10 @@ if __name__=='__main__':
     dir_path='saved_data'
     check_dir(dir_path)
     input_type='.json'
-    # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'
-    model_name_list= ['facebook/opt-1.3b']#, 'facebook/opt-2.7b'
-    wm_level_list = ['model', ]#'model','sentence',  'token', 
+    model_name_list= ['facebook/opt-1.3b']
+    wm_level_list = ['model', ]
     dataset_num=str(12500)
     key_num=1
     key_token_list=[123]

@@ -209,4 +209,3 @@ if __name__=='__main__':
             for key in key_list:
                 print(wipe_success[key], raw_green_num[key], new_green_num[key], new_ppl[key], raw_ppl[key], end=' ')
             print()
-            # print(gamma, delta, data_num, wipe_success, raw_green_num, new_green_num, new_ppl, raw_ppl)

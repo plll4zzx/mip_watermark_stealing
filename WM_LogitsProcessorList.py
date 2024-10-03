@@ -1,4 +1,6 @@
-
+"""
+adapted from https://github.com/jwkirchenbauer/lm-watermarking
+"""
 from transformers.generation.logits_process import LogitsProcessorList
 import torch
 import inspect

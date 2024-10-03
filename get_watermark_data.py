@@ -1,18 +1,12 @@
 from transformers import OPTForCausalLM
 
-# model=OPTForCausalLM.from_pretrained("")
-# model.generate()
-
 from model_with_watermark import ModelWithWatermark
 # from model_with_esswm import ModelWithEswm
 from read_data import c4
 from tqdm import tqdm
 import os
 from utli import save_json, check_dir
-# import json
-# from Sentence_Embedder import Sentence_Embedder
-# from sentence_transformers import SentenceTransformer, util
-# import numpy as np
+
 
 def get_watermark_data(
     mww,
@@ -58,7 +52,6 @@ def get_watermark_data(
         c4_dataset.data[idx]['truncation_warning']=output1[1]
         c4_dataset.data[idx]['output_without_watermark']=output1[2]
         c4_dataset.data[idx]['output_with_watermark']=output1[3]
-        # c4_dataset.data[idx]['simi_score']=simi_score
 
         data_list.append(c4_dataset.data[idx])
         
@@ -94,7 +87,6 @@ if __name__=='__main__':
     
     model_name_list= ['../model/llama-2-7b', 'facebook/opt-1.3b',]
     finit_key_num=3
-    # os.system('set PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:32')
     for model_name in model_name_list:
         mww=ModelWithWatermark(model_name)
         for wm_level in wm_level_list:

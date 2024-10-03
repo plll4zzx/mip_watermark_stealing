@@ -1,3 +1,7 @@
+"""
+adapted from https://github.com/jwkirchenbauer/lm-watermarking
+"""
+
 """ Text-based normalizers, used to mitigate simple attacks against watermarking.
 
 This implementation is unlikely to be a complete list of all possible exploits within the unicode standard,

@@ -113,7 +113,6 @@ if __name__=='__main__':
     check_dir(dir_path)
     check_dir(save_path)
     input_type='.json'
-    # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'
     model_name_list= ['facebook/opt-1.3b']#, 'facebook/opt-1.3b','../model/llama-2-7b'
@@ -125,12 +124,11 @@ if __name__=='__main__':
     
     rand_num=0
     expect_green_size=1
-    # gamma, delta=0.25, 2
+    
     
     z_threshold=4
     query_flag=True
-    # sentence_up_num, sentence_down_num=0.99, 0.98
-    # wm_bound, nl_bound=0.95, 0.95
+    
     gamma_flag=True
     max_num_flag=False
     perb_rate=0
@@ -152,32 +150,17 @@ if __name__=='__main__':
         (0.5, 4, 0),##
     ]:#
         for (wm_data_num, nl_data_num, perb_rate) in [ 
-            # (100,100),#(500,500)
             (2000,2000,0),
             (5000,5000,0),
-            # # (5000,5000,0.3),
             (10000,10000,0),
-            # (10000,10000,0.7),
             (20000,20000,0),
-        #    (2000,2000),
-        # (3000,3000,0),
-        # (6000,6000,0),
-        # (20000,20000),# 
         ]:
             print()
-
-            # if max_num_flag:
-            #     max_num=2000#config_sta_max_num[model_name][(gamma, delta)][wm_data_num]
-            # else:
-            #     max_num=0
             
             green_inversor = GreenlistInversorSta(tokenizer_tag=model_name, logger=logger)
             
             green_inversor.log_info(to_string((wm_level, rand_num, gamma, delta)))
-            # green_inversor.log_info(to_string(('native_flag', native_flag)))
             
-            # green_list_name= get_greenlist_filename(key_token_list, gamma, model_name)
-            # green_inversor.load_true_green(os.path.join(dir_path, green_list_name))
             if wm_level=='model':
                 green_list_name= get_greenlist_filename(key_token_list, gamma, model_name)
             else:
@@ -210,11 +193,7 @@ if __name__=='__main__':
             )
 
             green_inversor.log_info(to_string(('gamma_flag:', gamma_flag)))
-            # green_inversor.find_green_list(key_id=key_token_list[0],  dir_path=save_path, gamma_flag=gamma_flag,)
-            # green_inversor.find_green_list(key_id=key_token_list[1], gamma_flag=gamma_flag,max_num=max_num)
-            # green_inversor.find_green_list(key_id=key_token_list[2], gamma_flag=gamma_flag,max_num=max_num)
-            # if max_num_flag:
-            #     expect_green_size+=max_num
+            
             green_inversor.find_green_list(
                 key_list=key_token_list, 
                 dir_path=save_path, 

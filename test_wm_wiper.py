@@ -1,18 +1,7 @@
 
-# import torch
-# import torch.nn.functional as F
-# from GensimModel import GensimModel
-# from get_greenlist import get_greenlist
+
 import numpy as np
-# from greenlist_inversion import count_green, count_z_score_bound
-# from copy import deepcopy
-# from Sentence_Embedder import Sentence_Embedder
-# from InstructorEmbedding import INSTRUCTOR
-# from sentence_transformers import SentenceTransformer, util
-# from tokenizations import get_alignments
-# import Levenshtein
-# from transformers import GPT2LMHeadModel, GPT2TokenizerFast, OPTForCausalLM, AutoTokenizer
-# import copy
+
 import os
 from utli import load_json, save_json, check_dir
 from tqdm import tqdm
@@ -26,15 +15,11 @@ from model_inversion_config import config, config_sen, config_pro, config_sta_ma
 
 if __name__=='__main__':
     
-    # os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
     parser = argparse.ArgumentParser(description='test WM_Wiper')
     parser.add_argument('--device', type=int, default=0)
     parser.add_argument('--model_name', type=str, default='facebook/opt-1.3b')
     parser.add_argument('--gamma', type=float, default=0.25)
     parser.add_argument('--delta', type=int, default=2)
-    # parser.add_argument('--data_num', type=int)
-    # parser.add_argument('--wm_bound', type=float, default=0.95)
-    # parser.add_argument('--nl_bound', type=float, default=0.95)
 
     parser.add_argument('--wm_seed', type=int, default=123)
     parser.add_argument('--nl_seed', type=int, default=456)
@@ -47,8 +32,6 @@ if __name__=='__main__':
 
     parser.add_argument('--expect_green_size', type=int, default=1)
     parser.add_argument('--z_threshold', type=int, default=4)
-    # parser.add_argument('--sentence_up_num', type=float, default=0.99)
-    # parser.add_argument('--sentence_down_num', type=float, default=0.98)
 
     parser.add_argument('--wp_mode', type=str, default='greedy')
     parser.add_argument('--beam_size', type=int, default=3)
@@ -63,13 +46,9 @@ if __name__=='__main__':
     model_name = args.model_name
     gamma = args.gamma
     delta = args.delta
-    # wm_bound = args.wm_bound
-    # nl_bound = args.nl_bound
 
     expect_green_size = args.expect_green_size
     z_threshold = args.z_threshold
-    # sentence_up_num = args.sentence_up_num
-    # sentence_down_num = args.sentence_down_num
 
     wm_seed = args.wm_seed
     nl_seed = args.nl_seed
@@ -98,7 +77,6 @@ if __name__=='__main__':
             model_name.replace('/', '_'), str(gamma), str(delta),
             attack_type, wp_mode, str(beam_size), str(candi_num),
             device, 
-            # str(wm_bound), str(nl_bound),
             str(datetime.datetime.now().date()),
         ))+'.log',
         level='debug', screen=False
@@ -112,15 +90,12 @@ if __name__=='__main__':
     # time.sleep(1440)
     wm_type='o'
     dataset_name='c4_realnewslike'
-    # model_name_list= ['facebook/opt-1.3b']#, 'facebook/opt-2.7b'
     wm_level_list = ['model']#'model','sentence',  'token', 'sentence_fi'
     dataset_num=str(30000)
     key_token_list=[123]
     key_num=1
     wm_level = wm_level_list[0]
-    # gamma=0.25
-    # delta=2
-    random_seed=789#456
+    random_seed=789
 
     with_watermark_list_len=1000
     
@@ -129,8 +104,6 @@ if __name__=='__main__':
         log.logger.info(tmp_str)
     perb_rate=0
     for data_num in [
-        # 3000, 
-        # 6000
         2000, 
         5000, 
         10000, 

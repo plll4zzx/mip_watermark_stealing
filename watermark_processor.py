@@ -1,3 +1,7 @@
+"""
+Parts adapted from https://github.com/jwkirchenbauer/lm-watermarking
+"""
+
 # coding=utf-8
 # Copyright 2023 Authors of "A Watermark for Large Language Models"
 # available at https://arxiv.org/abs/2301.10226

@@ -60,19 +60,10 @@ def plot_gi_bi(model_name):
                 color=color[idy],
                 label=attribute, 
             )
-            # else:
-            #     ax[idx].plot(
-            #         ['4000','10000','20000','40000'],
-            #         measurement, 
-            #         color=color[idy],
-            #         label=attribute, 
-            #     )
             if min_y>=min(measurement):
                 min_y=min(measurement)
             if max_y<=max(measurement):
                 max_y=max(measurement)
-        # ax[idx].set_size_inches(4,6)
-        # ax[idx].legend(loc='upper center', ncols=3, fontsize=8)
         if idx==0:
             ax[idx].set_ylabel(model_name, fontsize=18)
         ax[idx].set_xlabel('$\gamma$='+str(gamma)+', $\delta$='+str(delta), fontsize=14)
@@ -85,7 +76,3 @@ def plot_gi_bi(model_name):
 
 if __name__=='__main__':
     bar_gi_bi()
-    # model_name='OPT'
-    # plot_gi_bi(model_name)
-    # model_name='LLaMA'
-    # plot_gi_bi(model_name)
