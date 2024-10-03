@@ -136,16 +136,8 @@ if __name__=='__main__':
         10000, 
         20000
     ]:
-    # for (data_num, perb_rate) in [ 
-    #     # (5000,0.1),(5000,0.3),
-    #     (10000,0.5),
-    #     (10000,0.7),
-    # ]:
-        
         if query_flag=='True' and gamma_flag=='True' and oracle_flag=='False' and naive_flag=='False' and key_num==1:
             (wm_bound, nl_bound, sentence_up_num, sentence_down_num) = config_pro[model_name][(gamma, delta)][data_num]
-        # elif perb_rate>0:
-        #     (wm_bound, nl_bound, sentence_up_num, sentence_down_num) = config_conf[model_name][(gamma, delta)][data_num]
         elif key_num>1:
             (sentence_up_num, sentence_down_num, wm_bound, nl_bound, min_max_green_bound, expect_green_size, min_green_num) = config_sen[model_name][(gamma, delta, data_num)]
         else:
@@ -158,9 +150,6 @@ if __name__=='__main__':
                 wm_bound=0.95
             elif model_name=='../model/llama-2-7b' and gamma==0.25 and query_flag=='True' and gamma_flag=='True'and oracle_flag=='True' and naive_flag=='False':
                 nl_bound=1
-            # elif model_name=='../model/llama-2-7b' and gamma==0.25 and query_flag=='True' and gamma_flag=='True'and oracle_flag=='False' and naive_flag=='True':
-            #     nl_bound=1.0
-        # sentence_up_num, sentence_down_num=0.9,0.8
         if query_flag=='True' or naive_flag=='True' or oracle_flag=='True':
             sentence_up_num, sentence_down_num=1,1
         if naive_flag=='True' or oracle_flag=='True':
@@ -173,7 +162,6 @@ if __name__=='__main__':
             else:
                 perb_rate+=0.1
             sentence_down_num=np.round(sentence_down_num-perb_rate,2)
-            # wm_bound, nl_bound=1,1
 
         if attack_type =='sta':
             token_color_file_name='_'.join([
@@ -185,11 +173,10 @@ if __name__=='__main__':
                 str(expect_green_size),
                 str(z_threshold), 
                 str(query_flag), 
-                # str(gamma_flag), 
                 'token_color.json'
             ])
         else:
-            token_color_file_name='_'.join([#str(15)+'_'+
+            token_color_file_name='_'.join([
                 wm_level, wm_type, dataset_name, model_name.replace('/','_'), dataset_num,
                 str(key_token_list), str(key_num), 
                 str(wm_seed), str(nl_seed), str(rand_num), 
@@ -204,37 +191,15 @@ if __name__=='__main__':
                 'token_color.json'
             ])
 
-        
-        # if os.path.isfile(os.path.join(save_path,token_color_file_name))==False:
-        #     print('********')
-        #     print(token_color_file_name)
-        #     print('********')
-        #     continue
-        # else:
-        #     continue
-
         output_file_path=os.path.join(
             'saved_data/res_wp',
             '_'.join([
                 'wp', attack_type, wp_mode, 
                 str(beam_size), str(candi_num),str(with_watermark_list_len),
                 token_len,
-                # str(max_edit_rate),
                 token_color_file_name,
             ])
         )
-        # output_file_path2=os.path.join(
-        #     dir_path,
-        #     '_'.join(['wp_result', str(with_watermark_list_len)])+'_'+token_color_file_name
-        # )
-        # output_file_path3=os.path.join(
-        #     dir_path,
-        #     '_'.join(['wm', attack_type, wp_mode, str(beam_size), str(candi_num)])+'_'+str(with_watermark_list_len)+'_'+token_color_file_name
-        # )
-        
-        # if os.path.isfile(output_file_path):
-        #     log_print(to_string((model_name,gamma, delta,data_num,wm_bound, nl_bound, sentence_up_num, sentence_down_num)))
-        #     continue
 
         log_print('\n')
         log_print(output_file_path)
@@ -271,7 +236,6 @@ if __name__=='__main__':
                 without_watermark_list.append(data['output_without_watermark'])
                 re_sentence_list.append(data['redecoded_input'])
         
-        # tmp_wm_data=self.tokenizer.batch_encode_plus(with_watermark_list).data['input_ids']
         random.seed(random_seed)
         random.shuffle(with_watermark_list)
         with_watermark_list=with_watermark_list[0:with_watermark_list_len]
@@ -311,11 +275,9 @@ if __name__=='__main__':
                 result=wm_wiper.wm_wipe_greedy(
                     sentence, 
                     simi_num_for_token=10,
-                    # ppl_model_id=model_name,
                     max_edit_rate=max_edit_rate,
                 )
 
-            # (new_sentence, wipe_success, raw_green_num, new_green_num, z_threshold_num, new_ppl.item(),raw_ppl.item())
             raw_green_num+=result[2] 
             new_green_num+=result[3] 
             if result[1]==1:
@@ -337,7 +299,7 @@ if __name__=='__main__':
                 'raw_ppl':result[6],
                 'raw_true_key':result[7],
             })
-        # print(sen_num, success_num, success_num/sen_num, cos_simi/sen_num, edit_dist/sen_num)
+            
         log_print(to_string(('sen_num', sen_num)))
         log_print(to_string(('success_num', success_num)))
         log_print(to_string(('success_rate', success_num/sen_num)))

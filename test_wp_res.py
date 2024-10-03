@@ -1,51 +1,78 @@
-from utli import load_json, check_dir
+from utli import load_json, check_dir, str2bool
 from model_inversion_config import config, config_sen, config_pro, config_sta_max_num
 import os
 import numpy as np
+import argparse
 
 if __name__=='__main__':
-    device = 'cuda:0'
-    model_name = 'facebook/opt-1.3b'#'../model/llama-2-7b'#
 
-    expect_green_size=1
-    z_threshold=4
-
-    wm_seed, nl_seed=123, 456
-    rand_num = 0
+    parser = argparse.ArgumentParser(description='test WM_Wiper')
+    parser.add_argument('--device', type=int, default=0)
     
-    query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, True #vanilla
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, True, False #oracle
-    # query_flag, gamma_flag, oracle_flag, naive_flag=False, False, False, False 
-    # query_flag, gamma_flag, oracle_flag, naive_flag=True, True, False, False#pro
+    parser.add_argument('--model_name', type=str, default='../model/llama-2-7b', help='../model/llama-2-7b OR facebook/opt-1.3b')#../model/llama-2-7b
+    parser.add_argument('--dir_path', type=str, default='saved_data/res_wp')
+    parser.add_argument('--save_path', type=str, default='saved_res')
+    parser.add_argument('--dataset_name', type=str, default='c4_realnewslike')
+    parser.add_argument('--wm_level', type=str, default='model', help='model OR sentence_fi')
 
-    wp_mode='greedy'
-    attack_type='op'#'sta'#
-    token_len_flag='False'#'True'#
+    parser.add_argument('--z_threshold', type=int, default='4')
+    parser.add_argument('--query_flag', type=str, default='True')
+    parser.add_argument('--gamma_flag', type=str, default='True')
+    parser.add_argument('--oracle_flag', type=str, default='False')
+    parser.add_argument('--naive_flag', type=str, default='True')
 
-    beam_size=3
-    candi_num=3
+    parser.add_argument('--attack_type', type=str, default='op', help='op OR sta')
+    parser.add_argument('--wp_mode', type=str, default='greedy', help='greedy OR gumbel')
+    parser.add_argument('--beam_size', type=int, default=1)
+    parser.add_argument('--candi_num', type=int, default=1)
+    args = parser.parse_args()
+    
+    device = 'cuda:'+str(args.device)
+    model_name = args.model_name
+    z_threshold = args.z_threshold
+    dataset_name=args.dataset_name
+    
+    query_flag=str2bool(args.query_flag) 
+    gamma_flag=str2bool(args.gamma_flag) 
+    oracle_flag=str2bool(args.oracle_flag) 
+    naive_flag=str2bool(args.naive_flag )
 
-    dir_path='saved_data/res_wp'
-    save_path='saved_res'
+    wp_mode=args.wp_mode
+    attack_type=args.attack_type
+
+    beam_size=args.beam_size
+    candi_num=args.candi_num
+
+    dir_path=args.dir_path
+    save_path=args.save_path
     check_dir(dir_path)
     check_dir(save_path)
+    wm_level = args.wm_level
+
     input_type='.json'
-    # time.sleep(1440)
     wm_type='o'
-    dataset_name='c4_realnewslike'
-    # model_name_list= ['facebook/opt-1.3b']#, 'facebook/opt-2.7b'
-    wm_level_list = ['model']#'model','sentence',  'token', 'sentence_fi'
     dataset_num=str(30000)
-    key_token_list=[123]
-    key_num=1
-    wm_level = wm_level_list[0]
-    # gamma=0.25
-    # delta=2
     random_seed=456
+    if wm_level=='model':
+        key_token_list=[123]
+        key_num=1
+        gamma_delta=[(0.25, 2),(0.25, 4),(0.5, 2),(0.5, 4)]
+        data_num_list=[2000, 5000, 10000, 20000]
+    else:
+        key_token_list=[1,2,3]
+        key_num=3
+        gamma_delta=[(0.25, 2),(0.5, 2),]
+        data_num_list=[3000, 6000]
+
 
     with_watermark_list_len=1000
     max_edit_rate=1
     perb_rate=0
+
+    expect_green_size=1
+    wm_seed, nl_seed=123, 456
+    rand_num = 0
+    token_len_flag='False'
 
     
     print(model_name, wp_mode, attack_type, 'token_len_flag=', token_len_flag)
@@ -54,23 +81,10 @@ if __name__=='__main__':
         print('wipe_success','raw_green_num','new_green_num','new_ppl','raw_ppl', end=' ')
     print()
     
-    for (gamma, delta) in [
-        (0.25, 2),
-        (0.25, 4),
-        (0.5, 2),
-        (0.5, 4),
-    ]:
-        # for data_num in [3000, 6000]:#100,500,]:#
-        for data_num in [2000, 5000, 10000, 20000]:#100,500,]:#
-        # for (data_num, perb_rate) in [ 
-        #     (5000,0.1),(5000,0.3),
-        #     (10000,0.5),(10000,0.7),
-        # ]:
-            
+    for (gamma, delta) in gamma_delta:
+        for data_num in data_num_list:
             if query_flag==True and gamma_flag==True and oracle_flag==False and naive_flag==False and key_num==1:
                 (wm_bound, nl_bound, sentence_up_num, sentence_down_num) = config_pro[model_name][(gamma, delta)][data_num]
-            # elif perb_rate>0:
-            #     (wm_bound, nl_bound, sentence_up_num, sentence_down_num) = config_conf[model_name][(gamma, delta)][data_num]
             elif key_num>1:
                 (sentence_up_num, sentence_down_num, wm_bound, nl_bound, min_max_green_bound, expect_green_size, min_green_num) = config_sen[model_name][(gamma, delta, data_num)]
             else:
@@ -106,11 +120,10 @@ if __name__=='__main__':
                     str(expect_green_size),
                     str(z_threshold), 
                     str(query_flag), 
-                    # str(gamma_flag), 
                     'token_color.json'
                 ])
             else:
-                token_color_file_name='_'.join([#str(15)+'_'+
+                token_color_file_name='_'.join([#
                     wm_level, wm_type, dataset_name, model_name.replace('/','_'), dataset_num,
                     str(key_token_list), str(key_num), 
                     str(wm_seed), str(nl_seed), str(rand_num), 
@@ -124,6 +137,8 @@ if __name__=='__main__':
                     str(naive_flag),
                     'token_color.json'
                 ])
+                if wm_level=='sentence_fi':
+                    token_color_file_name=str(15)+'_'+token_color_file_name
                 
             output_file_path=os.path.join(
                 dir_path,
@@ -131,7 +146,6 @@ if __name__=='__main__':
                     'wp', attack_type, wp_mode, 
                     str(beam_size), str(candi_num),str(with_watermark_list_len),
                     token_len_flag,
-                    # str(max_edit_rate),
                     token_color_file_name,
                 ])
             )
@@ -143,6 +157,8 @@ if __name__=='__main__':
 
             key_list=[]
             for wp_res in wp_res_list:
+                if 'raw_true_key' not in wp_res:
+                    wp_res['raw_true_key']=key_token_list[0]
                 if wp_res['raw_true_key'] in key_list:
                     continue
                 key_list.append(wp_res['raw_true_key'])

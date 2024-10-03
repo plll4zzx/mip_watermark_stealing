@@ -9,6 +9,12 @@ import random
 import copy
 import os
 
+def str2bool(x):
+    if x=='True':
+        return True
+    elif x=='False':
+        return False
+
 def check_dir(dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
